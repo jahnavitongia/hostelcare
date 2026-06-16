@@ -10,8 +10,28 @@ import { setContext } from '@apollo/client/link/context';
 import App from './App.jsx';
 import './styles.css';
 
+function resolveGraphQLEndpoint(value) {
+  const fallback = 'http://localhost:4000/graphql';
+
+  if (!value) {
+    return fallback;
+  }
+
+  try {
+    const url = new URL(value);
+
+    if (url.pathname === '/' || !url.pathname) {
+      url.pathname = '/graphql';
+    }
+
+    return url.toString();
+  } catch (error) {
+    return value.endsWith('/') ? `${value}graphql` : value;
+  }
+}
+
 const httpLink = createHttpLink({
-  uri: import.meta.env.VITE_GRAPHQL_URL || 'http://localhost:4000/graphql'
+  uri: resolveGraphQLEndpoint(import.meta.env.VITE_GRAPHQL_URL)
 });
 
 const authLink = setContext((_, { headers }) => {
